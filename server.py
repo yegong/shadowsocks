@@ -21,6 +21,9 @@
 # SOFTWARE.
 
 PORT = 8499
+ENABLE_SSL = True
+SSL_KEY_FILE = 'server.key'
+SSL_CERT_FILE = 'server.crt'
 KEY = "foobar!"
 
 try:
@@ -36,6 +39,9 @@ import struct
 import string
 import hashlib
 import sys
+
+if ENABLE_SSL:
+    import ssl
 
 #disable ThreadingTCPServer dns revsere lookup, sometimes it will be slow
 socket.getfqdn = lambda x:x
@@ -78,7 +84,12 @@ def get_table(key):
 
 
 class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    pass
+    def get_request(self):
+        sock, addr = SocketServer.TCPServer.get_request(self)
+        if ENABLE_SSL:
+            sock = ssl.wrap_socket(sock, keyfile=SSL_KEY_FILE, certfile=SSL_CERT_FILE,
+                                   server_side=True, ssl_version=ssl.PROTOCOL_SSLv3)
+        return sock, addr
 
 
 class Socks5Server(SocketServer.StreamRequestHandler):
@@ -107,7 +118,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
 
     def handle(self):
         try:
-            print 'socks connection from ', self.client_address
+            print >>sys.stderr, 'socks connection from ', self.client_address
             sock = self.connection
             sock.recv(262)
             self.send_encrpyt(sock, "\x05\x00")
@@ -121,6 +132,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
                     self.rfile.read(ord(self.decrypt(sock.recv(1)))))
             else:
                 # not support
+                print >>sys.stderr, 'not support'
                 return
             port = struct.unpack('>H', self.decrypt(self.rfile.read(2)))
             reply = "\x05\x00\x00\x01"
@@ -142,7 +154,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
                 if mode == 1:
                     self.handle_tcp(sock, remote)
         except socket.error as e:
-            print 'socket error'
+            print >>sys.stderr, 'socket error: %s' % str(e)
 
 
 def main():

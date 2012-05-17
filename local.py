@@ -20,11 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-SERVER = 'my_server_ip_or_host'
+SERVER = '127.0.0.1'
 REMOTE_PORT = 8499
 PORT = 1080
+ENABLE_SSL = True
 KEY = "foobar!"
 
+import sys
 import socket
 import select
 import string
@@ -34,6 +36,9 @@ import threading
 import time
 import SocketServer
 
+if ENABLE_SSL:
+    import ssl
+    
 #disable ThreadingTCPServer dns revsere lookup, sometimes it will be slow
 socket.getfqdn = lambda x:x
 
@@ -125,9 +130,11 @@ class Socks5Server(SocketServer.StreamRequestHandler):
         try:
             sock = self.connection
             remote = socket_create_connection((SERVER, REMOTE_PORT))
+            if ENABLE_SSL:
+                remote = ssl.wrap_socket(remote, ssl_version=ssl.PROTOCOL_SSLv3)
             self.handle_tcp(sock, remote)
         except socket.error as e:
-            lock_print('socket error: %s' % str(e))
+            print >>sys.stderr, 'socket error: %s' % str(e)
 
 
 def main():
