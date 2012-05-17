@@ -22,8 +22,8 @@
 
 PORT = 8499
 ENABLE_SSL = True
-SSL_KEY_FILE = 'server.key'
-SSL_CERT_FILE = 'server.crt'
+SSL_KEY_FILE = 'server.key'  # note: please generate your own key and cert
+SSL_CERT_FILE = 'server.crt'  # see README
 KEY = "foobar!"
 
 try:
