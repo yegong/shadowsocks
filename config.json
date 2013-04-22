@@ -1,7 +1,9 @@
 {
-    "server":"localhost",
-    "server_port":8388,
-    "local_port":1080,
-    "password":"barfoo!",
+    "server":"host1",
+    "server2":"host2",
+    "server_port":8080,
+    "server2_port":8080,
+    "local_port":7070,
+    "password":"",
     "timeout":600
 }

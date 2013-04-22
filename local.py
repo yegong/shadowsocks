@@ -135,7 +135,10 @@ class Socks5Server(SocketServer.StreamRequestHandler):
                 else:
                     remote = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 remote.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                remote.connect((SERVER, REMOTE_PORT))
+                if addr.startswith('10.'):
+                    remote.connect((SERVER2, REMOTE_PORT2))
+                else:
+                    remote.connect((SERVER, REMOTE_PORT))
                 self.send_encrypt(remote, addr_to_send)
                 logging.info('connecting %s:%d' % (addr, port[0]))
             except socket.error, e:
@@ -154,19 +157,25 @@ if __name__ == '__main__':
         config = json.load(f)
     SERVER = config['server']
     REMOTE_PORT = config['server_port']
+    SERVER2 = config['server2']
+    REMOTE_PORT2 = config['server2_port']
     PORT = config['local_port']
     KEY = config['password']
 
-    optlist, args = getopt.getopt(sys.argv[1:], 's:p:k:l:')
+    optlist, args = getopt.getopt(sys.argv[1:], 's:t:p:q:k:l:')
     for key, value in optlist:
         if key == '-p':
             REMOTE_PORT = int(value)
+        elif key == '-q':
+            REMOTE_PORT2 = int(value)
         elif key == '-k':
             KEY = value
         elif key == '-l':
             PORT = int(value)
         elif key == '-s':
             SERVER = value
+        elif key == '-t':
+            SERVER2 = value
 
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S', filemode='a+')
