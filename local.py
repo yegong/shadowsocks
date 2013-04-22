@@ -1,3 +1,4 @@
+# Last Change: 2013-04-22 09:45:02
 #!/usr/bin/env python
 
 # Copyright (c) 2012 clowwindy
@@ -20,8 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import with_statement
 import sys
-
+if sys.version_info < (2, 6):
+    import simplejson as json
+else:
+    import json
+ 
 try:
     import gevent, gevent.monkey
     gevent.monkey.patch_all(dns=gevent.version_info[0]>=1)
@@ -36,7 +42,6 @@ import struct
 import string
 import hashlib
 import os
-import json
 import logging
 import getopt
 
@@ -132,13 +137,18 @@ class Socks5Server(SocketServer.StreamRequestHandler):
                 # reply immediately
                 if '-6' in sys.argv[1:]:
                     remote = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                    remote.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    if addr.startswith('10.'):
+                        remote.connect((SERVER2, REMOTE_PORT2, 0, 0))
+                    else:
+                        remote.connect((SERVER, REMOTE_PORT, 0, 0))
                 else:
                     remote = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                remote.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                if addr.startswith('10.'):
-                    remote.connect((SERVER2, REMOTE_PORT2))
-                else:
-                    remote.connect((SERVER, REMOTE_PORT))
+                    remote.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+                    if addr.startswith('10.'):
+                        remote.connect((SERVER2, REMOTE_PORT2))
+                    else:
+                        remote.connect((SERVER, REMOTE_PORT))
                 self.send_encrypt(remote, addr_to_send)
                 logging.info('connecting %s:%d' % (addr, port[0]))
             except socket.error, e:
@@ -151,7 +161,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__) or '.')
-    print 'shadowsocks v0.9.3'
+    print 'shadowsocks v1.0'
 
     with open('config.json', 'rb') as f:
         config = json.load(f)
@@ -162,7 +172,15 @@ if __name__ == '__main__':
     PORT = config['local_port']
     KEY = config['password']
 
+<<<<<<< HEAD
     optlist, args = getopt.getopt(sys.argv[1:], 's:t:p:q:k:l:')
+=======
+    argv = sys.argv[1:]
+    if '-6' in sys.argv[1:]:
+        argv.remove('-6')
+
+    optlist, args = getopt.getopt(argv, 's:p:k:l:')
+>>>>>>> b8cb1a3e97950709d47ca2ba7c39e13cac87a23f
     for key, value in optlist:
         if key == '-p':
             REMOTE_PORT = int(value)

@@ -20,8 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import with_statement
 import sys
-
+if sys.version_info < (2, 6):
+    import simplejson as json
+else:
+    import json
+     
 try:
     import gevent, gevent.monkey
     gevent.monkey.patch_all(dns=gevent.version_info[0]>=1)
@@ -36,7 +41,6 @@ import struct
 import string
 import hashlib
 import os
-import json
 import logging
 import getopt
 
@@ -125,7 +129,7 @@ class Socks5Server(SocketServer.StreamRequestHandler):
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__) or '.')
 
-    print 'shadowsocks v0.9.3'
+    print 'shadowsocks v1.0'
 
     with open('config.json', 'rb') as f:
         config = json.load(f)
