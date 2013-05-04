@@ -172,15 +172,11 @@ if __name__ == '__main__':
     PORT = config['local_port']
     KEY = config['password']
 
-<<<<<<< HEAD
-    optlist, args = getopt.getopt(sys.argv[1:], 's:t:p:q:k:l:')
-=======
     argv = sys.argv[1:]
     if '-6' in sys.argv[1:]:
         argv.remove('-6')
 
-    optlist, args = getopt.getopt(argv, 's:p:k:l:')
->>>>>>> b8cb1a3e97950709d47ca2ba7c39e13cac87a23f
+    optlist, args = getopt.getopt(argv, 's:t:p:q:k:l:')
     for key, value in optlist:
         if key == '-p':
             REMOTE_PORT = int(value)
